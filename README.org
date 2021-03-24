@@ -1,0 +1,61 @@
+* Zone to VPC Associations
+
+Terraform configuration to authorize and associate a list of Route 53 private Hosted zone to a list of vpc_ids in another AWS account.
+
+This is one way to manage hosted-zone-to-VPC associations to a VPC in different AWS accounts.
+
+It will require possibly many module calls, a call for each list of VPCs in a region, in an AWS account.
+
+
+Prerequisites
+
+- Two AWS accounts. One with the hosted zones, and the other with the VPCs.
+- At least one VPC in each account.
+- Way to assume role in both providers from the credentials used to call terraform.
+
+
+** Hosted Zones
+
+Configuration for the hosted zones.
+
+*** Hosted Zones
+
+- balderdash
+
+
+** Workflow
+
+Edit main.tf in the root folder with provider blocks for vpc_provider and zone_provider, the AWS provider for the zone and the AWS provider for the vpc_ids list, respectively.
+
+Give values to vpc_ids and zone_ids in the call to the module.
+
+This example defines a hosted zone and record for demonstration purposes. If desired, remove these and supply the value for zone_id.
+
+Optionally, first create a test zone.
+
+#+begin_example sh
+terraform apply -target=aws_route53_zone.target -target=aws_route53_record.bob
+#+end_example
+
+terraform apply
+
+*** Warning
+
+#+begin_example sh
+Error: Invalid for_each argument
+#+end_example
+
+An error will occur if the zone_id is not populated with known values, as in the case of creating a zone in the root.
+
+
+** Test dig
+
+From inside an associated VPC run the command =dig bob.balderdash txt=.
+
+
+** Notes
+
+*** Zone Destruction
+
+It is possible to destroy the hosted zone with or without any associations. The associations are destroyed with the zone.
+
